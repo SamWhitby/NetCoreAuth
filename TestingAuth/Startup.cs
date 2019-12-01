@@ -26,6 +26,8 @@ namespace TestingAuth
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
+
             services.AddAuthentication(nameof(SchemeOneHandler))
                 .AddScheme<AuthenticationSchemeOptions, SchemeOneHandler>(nameof(SchemeOneHandler), o => { })
                 .AddScheme<AuthenticationSchemeOptions, SchemeTwoHandler>(nameof(SchemeTwoHandler), o => { });          
@@ -46,6 +48,20 @@ namespace TestingAuth
 
             app.UseMvc();
         }
+    }
+
+    internal class CustomAuthorizationPolicyProvider : IAuthorizationPolicyProvider
+    {
+        private DefaultAuthorizationPolicyProvider BackupPolicyProvider { get; }
+
+        public CustomAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
+        {
+            BackupPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+        }
+
+        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName) => BackupPolicyProvider.GetPolicyAsync(policyName);
+
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => BackupPolicyProvider.GetDefaultPolicyAsync();
     }
 
     public class SchemeOneHandler : AuthenticationHandler<AuthenticationSchemeOptions>
