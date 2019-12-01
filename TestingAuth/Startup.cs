@@ -36,6 +36,7 @@ namespace TestingAuth
                          .RequireAuthenticatedUser()
                          .Build();
                 config.Filters.Add(new AuthorizeFilter(policy));
+                config.AllowCombiningAuthorizeFilters = false;
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
